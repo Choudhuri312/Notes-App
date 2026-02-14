@@ -17,10 +17,16 @@
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Your Notes"
-            style="@style/Widget.MaterialComponents.Toolbar.Primary" />
+            app:title="Your Notes" />
 
     </com.google.android.material.appbar.AppBarLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerV"
@@ -33,7 +39,7 @@
         android:id="@+id/emptyView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No notes yet. Add one!"
+        android:text="@string/emptyView"
         android:textSize="18sp"
         android:visibility="gone"
         android:layout_gravity="center"
@@ -47,6 +53,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/add_24"
-        android:contentDescription="Add Note"/>
+        android:backgroundTint="@color/brown"
+        android:contentDescription="@string/BtnFAB"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -10,14 +10,22 @@ import java.util.ArrayList;
 
 public class DbClass extends SQLiteOpenHelper {
 
-    public static final String DbName = "motes_db";
+    public static final String DbName = "notes_db";
     public static final int DbVersion = 1;
     public static final String TableName = "notes";
     public static final String tableId = "id";
     public static final String tableTitle = "noteTitle";
     public static final String tableDesc = "noteDesc";
+    public static DbClass instance;
 
-    public DbClass(Context context) {
+    // Prevent leaks and crashes
+    public static synchronized DbClass getInstance(Context context) {
+        if(instance == null){
+            instance = new DbClass(context.getApplicationContext());
+        }
+        return instance;
+    }
+    private DbClass(Context context) {
         super(context, DbName, null, DbVersion);
     }
 
@@ -43,7 +51,6 @@ public class DbClass extends SQLiteOpenHelper {
         cv.put(tableTitle, title);
         cv.put(tableDesc, Desc);
         long insert = db.insert(TableName, null, cv);
-        db.close();
         return insert != -1;
     }
     public boolean updateData(int id, String title, String desc){
@@ -52,13 +59,11 @@ public class DbClass extends SQLiteOpenHelper {
         cv.put(tableTitle, title);
         cv.put(tableDesc, desc);
         long update = db.update(TableName, cv, tableId+"=?", new String[]{String.valueOf(id)});
-        db.close();
         return update > 0;
     }
     public boolean deleteData(int id){
         SQLiteDatabase db = getWritableDatabase();
         long delete = db.delete(TableName, tableId+"=?", new String[]{String.valueOf(id)});
-        db.close();
         return delete > 0;
     }
     public ArrayList<ModelClass> getAllData(){
@@ -77,7 +82,6 @@ public class DbClass extends SQLiteOpenHelper {
             }while(cursor.moveToNext());
         }
         cursor.close();
-        db.close();
         return list;
     }
     public ArrayList<ModelClass> searchData(String query){
@@ -102,7 +106,6 @@ public class DbClass extends SQLiteOpenHelper {
             }while(cursor.moveToNext());
         }
         cursor.close();
-        searchDb.close();
         return searchList;
     }
 }

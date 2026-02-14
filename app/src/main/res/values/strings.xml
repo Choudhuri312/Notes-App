@@ -2,4 +2,8 @@
     <string name="app_name">Notes</string>
     <string name="note_title">Note Title</string>
     <string name="note_desc">Note Desc</string>
+    <string name="emptyView">No notes yet. Add one!</string>
+    <string name="BtnFAB">Add Note</string>
+    <string name="NoteTitle">Enter Note title</string>
+    <string name="NoteDesc">Enter Note description</string>
 </resources>

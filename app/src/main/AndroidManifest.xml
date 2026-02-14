@@ -16,6 +16,7 @@
             android:exported="false" />
         <activity
             android:name=".InsertNote"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
             android:name=".Splash"

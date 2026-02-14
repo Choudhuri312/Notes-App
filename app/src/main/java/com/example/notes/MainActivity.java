@@ -2,8 +2,13 @@ package com.example.notes;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -20,6 +25,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.widget.SearchView;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +37,12 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recView;
     FloatingActionButton btnFab;
     Menu menu;
+    ProgressBar progressBar;
+    TextView emptyView;
     boolean isSelectionActive = false;
+    // For background thread
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    Handler mainHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +54,11 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        data = new DbClass(this);
+        data = DbClass.getInstance(this);
         recView = findViewById(R.id.recyclerV);
         btnFab = findViewById(R.id.btnFab);
+        progressBar = findViewById(R.id.progressBar);
+        emptyView = findViewById(R.id.emptyView);
 
         recView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         MaterialToolbar toolbar = findViewById(R.id.topAppBar);
@@ -59,11 +73,78 @@ public class MainActivity extends AppCompatActivity {
         loadData();
     }
     public void loadData(){
-        fullList = data.getAllData();
-        currentList = new ArrayList<>(fullList);
-        adapter = new NotesAdapter(this, currentList);
-        recView.setAdapter(adapter);
+        progressBar.setVisibility(View.VISIBLE);
+
+        executor.execute( () -> { // --- BACKGROUND THREAD ---
+            fullList = data.getAllData();
+            currentList = new ArrayList<>(fullList);
+
+            mainHandler.post( () -> { // --- MAIN THREAD (Update UI) ---
+                updateUI(currentList);
+                progressBar.setVisibility(View.GONE);
+            });
+        });
     }
+    private void updateUI(ArrayList<ModelClass> newList) {
+        adapter = new NotesAdapter(this, newList);
+        recView.setAdapter(adapter);
+        emptyView.setVisibility(newList.isEmpty() ? View.VISIBLE : View.GONE); // Toggle empty message if list is empty
+    }
+    private void performSearch(String query) {
+        if(query.trim().isEmpty()){
+            updateUI(new ArrayList<>(fullList));
+            return;
+        }
+        executor.execute( () -> { //Background thread
+            currentList = data.searchData(query);
+            mainHandler.post( () -> updateUI(currentList)); // Main thread
+
+        });
+    }
+    private void deleteSelectedNotes() {
+        ArrayList<ModelClass> selected = adapter.getSelectedItems();
+        progressBar.setVisibility(View.VISIBLE);
+        if(selected.isEmpty()){
+            Toast.makeText(this, "No notes selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        executor.execute(() -> { //Background thread
+            for (ModelClass m : selected) {
+                if (m.isSelected()) {
+                    data.deleteData(m.getId()); // Delete from DB
+                }
+            }
+            mainHandler.post( () -> { // Main thread
+                loadData();// Fully reload to reflect changes
+                exitSelectionMode();
+                Toast.makeText(this, "Deleted", Toast.LENGTH_SHORT).show();
+            });
+        });
+    }
+    public void enterSelectionMode() {
+        isSelectionActive = true;
+        if (menu != null) {
+            menu.findItem(R.id.action_del).setVisible(true);
+            menu.findItem(R.id.action_secAll).setVisible(true);
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+    public void exitSelectionMode(){
+        isSelectionActive = false;
+        if(menu != null){
+            menu.findItem(R.id.action_del).setVisible(false);
+            menu.findItem(R.id.action_secAll).setVisible(false);
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        if(adapter != null) adapter.clearSelection();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown(); // Fixes Memory Leak's
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
@@ -72,6 +153,10 @@ public class MainActivity extends AppCompatActivity {
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setQueryHint("Search notes...");
+
+        searchView.setOnSearchClickListener( v -> {
+            searchView.requestFocus();
+        });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -90,34 +175,6 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.action_secAll).setVisible(false);
         return true;
     }
-    private void performSearch(String query) {
-        if(query.trim().isEmpty()){
-            currentList = new ArrayList<>(fullList);
-        }else{
-            // Fetch filtered data from DB
-            currentList = data.searchData(query);
-        }
-        // Update the adapter with the new list
-        adapter = new NotesAdapter(this, currentList);
-        recView.setAdapter(adapter);
-    }
-    public void enterSelectionMode() {
-        isSelectionActive = true;
-        if (menu != null) {
-            menu.findItem(R.id.action_del).setVisible(true);
-            menu.findItem(R.id.action_secAll).setVisible(true);
-        }
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-    public void exitSelectionMode(){
-        isSelectionActive = false;
-        if(menu != null){
-            menu.findItem(R.id.action_del).setVisible(false);
-            menu.findItem(R.id.action_secAll).setVisible(false);
-        }
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        adapter.clearSelection();
-    }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // Handle the Home/Back button
@@ -135,23 +192,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    private void deleteSelectedNotes() {
-        ArrayList<ModelClass> selected = adapter.getSelectedItems();
-        if(selected.isEmpty()){
-            Toast.makeText(this, "No notes selected", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        for (ModelClass m : selected) {
-            if (m.isSelected()) {
-                data.deleteData(m.getId()); // Delete from DB
-            }
-        }
-        loadData();// Fully reload to reflect changes
-        exitSelectionMode();
-        Toast.makeText(this, "Note's Deleted", Toast.LENGTH_SHORT).show();
-    }
-
-
     @Override
     public void onBackPressed() {
         if(isSelectionActive){

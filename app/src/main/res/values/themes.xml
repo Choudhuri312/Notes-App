@@ -2,7 +2,25 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Notes" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/charcoal_grey</item>
+        <item name="colorPrimaryVariant">@color/deep_black</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Surface colors for cards, sheets, menus -->
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
+
+        <!-- Background color -->
+        <item name="android:colorBackground">@color/grey_background</item>
+        <item name="colorOnBackground">@color/black</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/grey_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- App Bar / Toolbar colors -->
+        <item name="colorPrimaryContainer">@color/charcoal_grey</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
     </style>
 
     <style name="Theme.Notes" parent="Base.Theme.Notes" />

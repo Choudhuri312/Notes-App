@@ -2,6 +2,28 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Notes" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Customize your dark theme here. -->
+        <item name="colorPrimary">@color/deep_black</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Surface colors for cards, sheets, menus -->
+        <item name="colorSurface">#1E1E1E</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- Background color -->
+        <item name="android:colorBackground">#121212</item>
+        <item name="colorOnBackground">@color/white</item>
+
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- App Bar / Toolbar colors -->
+        <item name="colorPrimaryContainer">@color/deep_black</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+
+        <!-- Additional dark theme elements -->
+        <item name="colorControlActivated">@color/white</item>
     </style>
 </resources>

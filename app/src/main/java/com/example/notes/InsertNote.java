@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -16,7 +15,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.concurrent.Executors;
 
 public class InsertNote extends AppCompatActivity {
     EditText addTitle, addDesc;
@@ -35,7 +35,7 @@ public class InsertNote extends AppCompatActivity {
         });
         addTitle = findViewById(R.id.addTitle);
         addDesc = findViewById(R.id.addDesc);
-        db = new DbClass(this);
+        db = DbClass.getInstance(this);
 
         MaterialToolbar toolbar = findViewById(R.id.insert_topAppBar);
         setSupportActionBar(toolbar);
@@ -55,8 +55,9 @@ public class InsertNote extends AppCompatActivity {
             addTitle.setText(title);
             addDesc.setText(desc);
 
-            getSupportActionBar().setTitle("View/Update Note");
-
+            if(getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("View/Update Note");
+            }
         }
     }
     // 1. Inflate the menu
@@ -86,20 +87,24 @@ public class InsertNote extends AppCompatActivity {
             Toast.makeText(this, "Enter title or description", Toast.LENGTH_SHORT).show();
             return;
         }
+        // Move DB operation to background
+        Executors.newSingleThreadExecutor().execute( () -> {
         // ---------------- INSERT MODE -----------------
-        boolean success;
-        if (noteId == -1) {
-            success = db.insertData(title, desc);
+            boolean success;
+            DbClass db = DbClass.getInstance(this);
+            if (noteId == -1) {
+                success = db.insertData(title, desc);
+            } else {
+                // ---------------- UPDATE MODE -----------------
+                success = db.updateData(noteId, title, desc);
+            }
+            // Return to UI thread for feedback
+            runOnUiThread( () -> {
+                Toast.makeText(this, success ? "Note Saved" : "Failed to Save", Toast.LENGTH_SHORT).show();
+                if(success) finish(); // return to main activity
+            });
+        });
 
-            Toast.makeText(this, success ? "Note Added" : "Failed to Add Note", Toast.LENGTH_SHORT).show();
-                finish(); // return to main activity
-        } else {
-            // ---------------- UPDATE MODE -----------------
-            success = db.updateData(noteId, title, desc);
 
-            Toast.makeText(this, success ? "Note Updated" : "Failed to Update Note", Toast.LENGTH_SHORT).show();
-                finish();
-
-        }
     }
 }

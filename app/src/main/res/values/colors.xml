@@ -4,4 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="lightBlack">#2b2e3a</color>
     <color name="brown">#6a3b1f</color>
+    <color name="charcoal_grey">#2C2C2C</color>
+    <color name="deep_black">#1A1A1A</color>
+    <color name="grey_background">#F5F5F5</color>
 </resources>

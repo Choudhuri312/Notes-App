@@ -27,7 +27,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
     public NotesAdapter(Context context, ArrayList<ModelClass> list){
         this.context = context;
         this.list = list;
-        this.db = new DbClass(context);
+        this.db = DbClass.getInstance(context);
     }
     @NonNull
     @Override
@@ -62,14 +62,19 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
         holder.rows.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int adapterPosition = holder.getAdapterPosition();
+                if(adapterPosition == RecyclerView.NO_POSITION) return;
+
+                ModelClass currentModel = list.get(adapterPosition);
+
                 if(isSelectedMode){
-                    toggleSelection(position);
+                    toggleSelection(adapterPosition);
                 }else {
                     Intent intent = new Intent(context, InsertNote.class);
                     //send data to insertNote activity
-                    intent.putExtra("id", model.getId());
-                    intent.putExtra("title", model.getTitle());
-                    intent.putExtra("desc", model.getDesc());
+                    intent.putExtra("id", currentModel.getId());
+                    intent.putExtra("title", currentModel.getTitle());
+                    intent.putExtra("desc", currentModel.getDesc());
                     //required when calling intent from adapter
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
@@ -82,12 +87,21 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder> 
         return list.size();
     }
     private void toggleSelection(int position){
+
+        if(position < 0 || position >= list.size()) return;
+
         ModelClass model = list.get(position);
         model.setSelected(!model.isSelected());
         notifyItemChanged(position);
+        // Check if any items are still selected (compatible with older Android versions)
+        boolean anySelected = false;
+        for(ModelClass m : list) {
+            if(m.isSelected()) {
+                anySelected = true;
+                break;
+            }
+        }
         // If nothing is selected anymore, turn off selection mode
-        boolean anySelected = list.stream().anyMatch(ModelClass::isSelected);
-
         if (!anySelected) {
             isSelectedMode = false;
             // Triggers showSelectionMenu(false) which hides the back button
