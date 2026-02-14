@@ -27,7 +27,7 @@ A modern, feature-rich Android notes application with a clean Material Design in
 
 > ![Image](https://github.com/Choudhuri312/Notes-App/blob/main/Home_screen.jpg)
 > ![Image](https://github.com/Choudhuri312/Notes-App/blob/main/Selection_mode_screen.jpg)
-> ![Image](https://github.com/Choudhuri312/Notes-App/blob/main/Home_screen.jpg)
+> ![Image](https://github.com/Choudhuri312/Notes-App/blob/main/view_update_scren.jpg)
 
 ## 🚀 Getting Started
 
