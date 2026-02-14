@@ -1,6 +1,6 @@
 # 📝 Notes App
 
-A modern, feature-rich Android notes application with a clean Material Design interface and powerful note management capabilities.
+A modern, feature-rich Android notes application with a clean Material Design interface, dark mode support, and powerful note management capabilities.
 
 ![Android](https://img.shields.io/badge/Platform-Android-green.svg)
 ![Language](https://img.shields.io/badge/Language-Java-orange.svg)
